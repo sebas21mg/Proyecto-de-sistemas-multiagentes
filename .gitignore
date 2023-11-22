@@ -70,3 +70,7 @@ Simulacion/[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*/*.bin*
 # Temporary auto-generated Android Assets
 Simulacion/[Aa]ssets/[Ss]treamingAssets/aa.meta
 Simulacion/[Aa]ssets/[Ss]treamingAssets/aa/*
+
+
+# De Mesa
+Server/__pycache__/
