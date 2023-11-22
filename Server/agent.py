@@ -17,28 +17,41 @@ class Car(Agent):
             model: Model reference for the agent
         """
         super().__init__(unique_id, model)
-        self.previous_pos = None
+        self.direction = "Undefined"
+
+    # Obtener la posición del siguiente movimiento usando la dirección provista
+    def get_next_move_pos(self, direction, x, y):
+        if direction == "Up":
+            return (x, y + 1)
+        elif direction == "Down":
+            return (x, y - 1)
+        elif direction == "Left":
+            return (x - 1, y)
+        elif direction == "Right":
+            return (x + 1, y)
 
     def next_move(self):
         x, y = self.pos
 
+        # Lista con todos los agentes que estén en la celda del carro
         current_cell = self.model.grid.get_cell_list_contents([(x, y)])
 
+        # Si hay un Road en la celda
         if any(isinstance(agent, Road) for agent in current_cell):
             road_agent = next(
                 agent for agent in current_cell if isinstance(agent, Road))
-            if road_agent.direction == "Up":
-                return (x, y + 1)
-            elif road_agent.direction == "Down":
-                return (x, y - 1)
-            elif road_agent.direction == "Left":
-                return (x - 1, y)
-            elif road_agent.direction == "Right":
-                return (x + 1, y)
+
+            if road_agent.direction != "TrafficLight":
+                self.direction = road_agent.direction
+                return self.get_next_move_pos(self.direction, x, y)
             else:
-                previous_x, previous_y = (
-                    x - self.previous_pos[0], y - self.previous_pos[1])
-                return (x + previous_x, y + previous_y)
+                traffic_light_agent = next(
+                    agent for agent in current_cell if isinstance(agent, Traffic_Light))
+
+                if (traffic_light_agent.state):
+                    return self.get_next_move_pos(self.direction, x, y)
+                else:
+                    return x, y
 
         return (x, y)
 
@@ -48,7 +61,6 @@ class Car(Agent):
         """
         # Calculate the next move
         next_position = self.next_move()
-        self.previous_pos = self.pos
         # print(f"Next move of {self.unique_id}: {next_position}")
         # Move the agent to the calculated next position
         self.model.grid.move_agent(self, next_position)
@@ -58,8 +70,6 @@ class Car(Agent):
         Determines the new direction it will take, and then moves
         """
         self.move()
-        print((self.pos[0] - self.previous_pos[0],
-              self.pos[1] - self.previous_pos[1]))
 
 
 class Traffic_Light(Agent):
@@ -117,7 +127,7 @@ class Road(Agent):
     Road agent. Determines where the cars can move, and in which direction.
     """
 
-    def __init__(self, unique_id, model, direction="Undefined"):
+    def __init__(self, unique_id, model, direction="TrafficLight"):
         """
         Creates a new road.
         Args:
