@@ -19,6 +19,7 @@ class CityModel(Model):
 
         self.traffic_lights = []
         self.step_count = 0  # Nuevo contador de pasos
+        self.destinations = []
 
         # Load the map file. The map file is a text file where each character represents an agent.
         with open('city_files/2022_base.txt') as baseFile:
@@ -28,9 +29,6 @@ class CityModel(Model):
             
             self.grid = MultiGrid(self.width, self.height, torus = False) 
             self.schedule = RandomActivation(self)
-            
-            # Create cars only at the corners
-            self.add_corner_cars()
             
             # Goes through each character in the map file and creates the corresponding agent.
             for r, row in enumerate(lines):
@@ -52,8 +50,10 @@ class CityModel(Model):
                     elif col == "D":
                         agent = Destination(f"d_{r*self.width+c}", self)
                         self.grid.place_agent(agent, (c, self.height - r - 1))
-
-        
+                        self.destinations.append(agent.pos)
+        print(self.destinations)
+        # Create cars only at the corners
+        self.add_corner_cars()
         self.num_agents = N
         self.running = True
     
@@ -67,7 +67,8 @@ class CityModel(Model):
 
         for corner in corners:
             x, y = corner
-            agent = Car(f"car_{self.step_count}_{x}_{y}", self)
+            destination = random.choice(self.destinations)
+            agent = Car(f"car_{self.step_count}_{x}_{y}", self, destination)
             self.grid.place_agent(agent, (x, y))
             self.schedule.add(agent)
 
