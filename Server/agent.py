@@ -8,6 +8,7 @@ class Car(Agent):
         unique_id: Agent's ID 
         direction: Randomly chosen direction chosen from one of eight directions
     """
+
     def __init__(self, unique_id, model):
         """
         Creates a new random agent.
@@ -16,15 +17,16 @@ class Car(Agent):
             model: Model reference for the agent
         """
         super().__init__(unique_id, model)
+        self.previous_pos = None
 
     def next_move(self):
         x, y = self.pos
-        print(self.pos)
-        
+
         current_cell = self.model.grid.get_cell_list_contents([(x, y)])
-        
+
         if any(isinstance(agent, Road) for agent in current_cell):
-            road_agent = next(agent for agent in current_cell if isinstance(agent, Road))
+            road_agent = next(
+                agent for agent in current_cell if isinstance(agent, Road))
             if road_agent.direction == "Up":
                 return (x, y + 1)
             elif road_agent.direction == "Down":
@@ -33,32 +35,39 @@ class Car(Agent):
                 return (x - 1, y)
             elif road_agent.direction == "Right":
                 return (x + 1, y)
-                
+            else:
+                previous_x, previous_y = (
+                    x - self.previous_pos[0], y - self.previous_pos[1])
+                return (x + previous_x, y + previous_y)
+
         return (x, y)
-        
-    
+
     def move(self):
         """ 
         Determines if the agent can move in the direction that was chosen
-        """        
+        """
         # Calculate the next move
         next_position = self.next_move()
-        print(f"Next move of {self.unique_id}: {next_position}")
+        self.previous_pos = self.pos
+        # print(f"Next move of {self.unique_id}: {next_position}")
         # Move the agent to the calculated next position
         self.model.grid.move_agent(self, next_position)
-        
 
     def step(self):
         """ 
         Determines the new direction it will take, and then moves
         """
         self.move()
+        print((self.pos[0] - self.previous_pos[0],
+              self.pos[1] - self.previous_pos[1]))
+
 
 class Traffic_Light(Agent):
     """
     Traffic light. Where the traffic lights are in the grid.
     """
-    def __init__(self, unique_id, model, state = False, timeToChange = 10):
+
+    def __init__(self, unique_id, model, state=False, timeToChange=10):
         super().__init__(unique_id, model)
         """
         Creates a new Traffic light.
@@ -78,31 +87,37 @@ class Traffic_Light(Agent):
         if self.model.schedule.steps % self.timeToChange == 0:
             self.state = not self.state
 
+
 class Destination(Agent):
     """
     Destination agent. Where each car should go.
     """
+
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
 
     def step(self):
         pass
+
 
 class Obstacle(Agent):
     """
     Obstacle agent. Just to add obstacles to the grid.
     """
+
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
 
     def step(self):
         pass
 
+
 class Road(Agent):
     """
     Road agent. Determines where the cars can move, and in which direction.
     """
-    def __init__(self, unique_id, model, direction= "Left"):
+
+    def __init__(self, unique_id, model, direction="Undefined"):
         """
         Creates a new road.
         Args:
@@ -111,6 +126,7 @@ class Road(Agent):
             direction: Direction where the cars can move
         """
         super().__init__(unique_id, model)
+
         self.direction = direction
 
     def step(self):
