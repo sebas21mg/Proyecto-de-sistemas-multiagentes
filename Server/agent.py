@@ -1,5 +1,6 @@
 from mesa import Agent
 
+
 class Car(Agent):
     """
     Agent that moves randomly.
@@ -16,11 +17,36 @@ class Car(Agent):
         """
         super().__init__(unique_id, model)
 
+    def next_move(self):
+        x, y = self.pos
+        print(self.pos)
+        
+        current_cell = self.model.grid.get_cell_list_contents([(x, y)])
+        
+        if any(isinstance(agent, Road) for agent in current_cell):
+            road_agent = next(agent for agent in current_cell if isinstance(agent, Road))
+            if road_agent.direction == "Up":
+                return (x, y + 1)
+            elif road_agent.direction == "Down":
+                return (x, y - 1)
+            elif road_agent.direction == "Left":
+                return (x - 1, y)
+            elif road_agent.direction == "Right":
+                return (x + 1, y)
+                
+        return (x, y)
+        
+    
     def move(self):
         """ 
         Determines if the agent can move in the direction that was chosen
         """        
-        self.model.grid.move_to_empty(self)
+        # Calculate the next move
+        next_position = self.next_move()
+        print(f"Next move of {self.unique_id}: {next_position}")
+        # Move the agent to the calculated next position
+        self.model.grid.move_agent(self, next_position)
+        
 
     def step(self):
         """ 
