@@ -17,6 +17,7 @@ class Car(Agent):
         """
         super().__init__(unique_id, model)
         self.direction = "Undefined"
+        self.destination = destination
 
     # Obtener la posición del siguiente movimiento usando la dirección provista
     def get_next_move_pos(self, direction, x, y):
