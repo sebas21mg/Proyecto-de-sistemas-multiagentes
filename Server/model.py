@@ -20,6 +20,9 @@ class CityModel(Model):
         dataDictionary = json.load(open("city_files/mapDictionary.json"))
 
         self.traffic_lights = []
+        self.destinations = []
+        self.step_count = 0
+        
 
         # Load the map file. The map file is a text file where each character represents an agent.
         with open('city_files/2022_base.txt') as baseFile:
@@ -30,10 +33,7 @@ class CityModel(Model):
 
             self.grid = MultiGrid(self.width, self.height, torus=False)
             self.schedule = RandomActivation(self)
-
-            # Create cars only at the corners
-            self.add_corner_cars()
-
+            
             # Goes through each character in the map file and creates the corresponding agent.
             for r, row in enumerate(lines):
                 for c, col in enumerate(row):
@@ -60,7 +60,10 @@ class CityModel(Model):
                     elif col == "D":
                         agent = Destination(f"d_{r*self.width+c}", self)
                         self.grid.place_agent(agent, (c, self.height - r - 1))
-
+                        self.destinations.append(agent.pos)
+        print(self.destinations)
+        # Create cars only at the corners
+        self.add_corner_cars()
         self.num_agents = N
         self.running = True
 
@@ -78,11 +81,16 @@ class CityModel(Model):
 
         for corner in corners:
             x, y = corner
-            agent = Car(f"car_{x}_{y}", self)
-            # print(f"{corner}")
+            destination = random.choice(self.destinations)
+            agent = Car(f"car_{self.step_count}_{x}_{y}", self, destination)
+            print(f"Car: {agent.unique_id} con destino: {agent.destination}")
             self.grid.place_agent(agent, (x, y))
             self.schedule.add(agent)
 
     def step(self):
         '''Advance the model by one step.'''
         self.schedule.step()
+        self.step_count += 1
+        
+        if self.step_count % 10 == 0:
+            self.add_corner_cars()
