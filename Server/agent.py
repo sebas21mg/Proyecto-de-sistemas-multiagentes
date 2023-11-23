@@ -1,5 +1,5 @@
 from mesa import Agent
-
+import random
 
 class Car(Agent):
     """
@@ -29,6 +29,22 @@ class Car(Agent):
             return (x - 1, y)
         elif direction == "Right":
             return (x + 1, y)
+        elif direction == "UpRight":
+            choices = [(x + 1, y), (x, y +1)]
+            choice = random.choice(choices)
+            return choice
+        elif direction == "UpLeft":
+            choices = [(x - 1, y), (x, y + 1)]
+            choice = random.choice(choices)
+            return choice
+        elif direction == "DownLeft":
+            choices = [(x - 1, y), (x, y - 1)]
+            choice = random.choice(choices)
+            return choice
+        elif direction == "DownRight":
+            choices = [(x + 1, y), (x, y - 1)]
+            choice = random.choice(choices)
+            return choice
 
     def next_move(self):
         x, y = self.pos

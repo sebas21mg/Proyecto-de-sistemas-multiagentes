@@ -37,7 +37,7 @@ class CityModel(Model):
             # Goes through each character in the map file and creates the corresponding agent.
             for r, row in enumerate(lines):
                 for c, col in enumerate(row):
-                    if col in ["v", "^", ">", "<"]:
+                    if col in ["v", "^", ">", "<", "L", "Q", "A", "F"]:
                         agent = Road(f"r_{r*self.width+c}",
                                      self, dataDictionary[col])
                         self.grid.place_agent(agent, (c, self.height - r - 1))
@@ -61,6 +61,7 @@ class CityModel(Model):
                         agent = Destination(f"d_{r*self.width+c}", self)
                         self.grid.place_agent(agent, (c, self.height - r - 1))
                         self.destinations.append(agent.pos)
+
         print(self.destinations)
         # Create cars only at the corners
         self.add_corner_cars()
