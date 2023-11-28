@@ -1,61 +1,78 @@
-from agent import *
+# TC2008B. Sistemas Multiagentes y Gráficas Computacionales
+# Python flask server to interact with Unity. Based on the code provided by Sergio Ruiz.
+# Octavio Navarro. October 2023git
+
+from flask import Flask, request, jsonify
 from model import CityModel
-from mesa.visualization import CanvasGrid, BarChartModule
-from mesa.visualization import ModularServer
+from agent import Car, Traffic_Light, Destination, Obstacle, Road
+
+# Size of the board:
+number_agents = 10
+width = 28
+height = 28
+randomModel = None
+currentStep = 0
+
+app = Flask("Traffic example")
 
 
-def agent_portrayal(agent):
-    if agent is None:
-        return
+@app.route('/init', methods=['GET', 'POST'])
+def initModel():
+    global currentStep, randomModel, number_agents, width, height
 
-    portrayal = {"Shape": "rect",
-                 "Filled": "true",
-                 "Layer": 1,
-                 "w": 1,
-                 "h": 1
-                 }
+    if request.method == 'POST':
+        number_agents = int(request.form.get('NAgents'))
+        width = int(request.form.get('width'))
+        height = int(request.form.get('height'))
+        currentStep = 0
 
-    if (isinstance(agent, Road)):
-        portrayal["Color"] = "grey"
-        portrayal["Layer"] = 0
+        print(request.form)
+        print(number_agents, width, height)
+        randomModel = CityModel(number_agents, width, height)
 
-    if (isinstance(agent, Destination)):
-        portrayal["Color"] = "lightgreen"
-        portrayal["Layer"] = 0
+        return jsonify({"message": "Parameters recieved, model initiated."})
+    elif request.method == 'GET':
+        number_agents = 10
+        width = 30
+        height = 30
+        currentStep = 0
+        randomModel = CityModel(number_agents, width, height)
 
-    if (isinstance(agent, Traffic_Light)):
-        portrayal["Color"] = "red" if not agent.state else "green"
-        portrayal["Layer"] = 1
-        portrayal["w"] = 0.5
-        portrayal["h"] = 0.5
-
-    if (isinstance(agent, Obstacle)):
-        portrayal["Color"] = "cadetblue"
-        portrayal["Layer"] = 0
-
-    if isinstance(agent, Car):
-        portrayal["Color"] = "blue"  # Puedes cambiar el color a tu elección
-        portrayal["Layer"] = 2
-        portrayal["w"] = 0.25
-        portrayal["h"] = 0.25
-
-    return portrayal
+        return jsonify({"message": "Default parameters recieved, model initiated."})
 
 
-width = 0
-height = 0
+@app.route('/getAgents', methods=['GET'])
+def getAgents():
+    global randomModel
 
-with open('city_files/2022_base.txt') as baseFile:
-    lines = baseFile.readlines()
-    width = len(lines[0])-1
-    height = len(lines)
+    if request.method == 'GET':
+        agentPositions = [{"id": str(a.unique_id), "x": x, "y": 1, "z": z}
+                          for a, (x, z) in randomModel.grid.coord_iter()
+                          if isinstance(a, Car)]
 
-model_params = {"N": 5}
+        return jsonify({'positions': agentPositions})
 
-print(width, height)
-grid = CanvasGrid(agent_portrayal, width, height, 500, 500)
 
-server = ModularServer(CityModel, [grid], "Traffic Base", model_params)
+@app.route('/getObstacles', methods=['GET'])
+def getObstacles():
+    global randomModel
 
-server.port = 8521  # The default
-server.launch()
+    if request.method == 'GET':
+        carPositions = [{"id": str(a.unique_id), "x": x, "y": 1, "z": z}
+                        for a, (x, z) in randomModel.grid.coord_iter()
+                        if isinstance(a, Obstacle)]
+
+        return jsonify({'positions': carPositions})
+
+
+@app.route('/update', methods=['GET'])
+def updateModel():
+    global currentStep, randomModel
+    if request.method == 'GET':
+        randomModel.step()
+        currentStep += 1
+        return jsonify({'message': f'Model updated to step {currentStep}.', 'currentStep': currentStep})
+
+
+if __name__ == '__main__':
+    app.run(host="localhost", port=8585, debug=True)
