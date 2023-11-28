@@ -20,33 +20,37 @@ class Car(Agent):
         self.destination = destination
 
     # Obtener la posición del siguiente movimiento usando la dirección provista
-    def get_next_move_pos(self, direction, x, y):
+    def get_next_move_by_direction(self, direction, x, y):
+        next_pos = (x, y)
         if direction == "Up":
-            return (x, y + 1)
+            next_pos = (x, y + 1)
         elif direction == "Down":
-            return (x, y - 1)
+            next_pos = (x, y - 1)
         elif direction == "Left":
-            return (x - 1, y)
+            next_pos = (x - 1, y)
         elif direction == "Right":
-            return (x + 1, y)
+            next_pos = (x + 1, y)
         elif direction == "UpRight":
-            choices = [(x + 1, y), (x, y +1)]
-            choice = random.choice(choices)
-            return choice
+            choices = [(x + 1, y), (x, y + 1)]
+            next_pos = random.choice(choices)
         elif direction == "UpLeft":
             choices = [(x - 1, y), (x, y + 1)]
-            choice = random.choice(choices)
-            return choice
+            next_pos = random.choice(choices)
         elif direction == "DownLeft":
             choices = [(x - 1, y), (x, y - 1)]
-            choice = random.choice(choices)
-            return choice
+            next_pos = random.choice(choices)
         elif direction == "DownRight":
             choices = [(x + 1, y), (x, y - 1)]
-            choice = random.choice(choices)
-            return choice
+            next_pos = random.choice(choices)
 
-    def next_move(self):
+        # Si en la dirección a la que tiene planeado irse el carro ya hay otro carro, no se mueve para que no choque
+        next_pos_agents = self.model.grid.get_cell_list_contents([next_pos])
+        if not any(isinstance(agent, Car) for agent in next_pos_agents):
+            return next_pos
+        else:
+            return (x, y)
+
+    def get_next_move(self):
         x, y = self.pos
 
         # Lista con todos los agentes que estén en la celda del carro
@@ -59,15 +63,15 @@ class Car(Agent):
 
             if road_agent.direction != "TrafficLight":
                 self.direction = road_agent.direction
-                return self.get_next_move_pos(self.direction, x, y)
+                return self.get_next_move_by_direction(self.direction, x, y)
             else:
                 traffic_light_agent = next(
                     agent for agent in current_cell if isinstance(agent, Traffic_Light))
 
                 if (traffic_light_agent.state):
-                    return self.get_next_move_pos(self.direction, x, y)
+                    return self.get_next_move_by_direction(self.direction, x, y)
                 else:
-                    return x, y
+                    return (x, y)
 
         return (x, y)
 
@@ -76,7 +80,7 @@ class Car(Agent):
         Determines if the agent can move in the direction that was chosen
         """
         # Calculate the next move
-        next_position = self.next_move()
+        next_position = self.get_next_move()
         # print(f"Next move of {self.unique_id}: {next_position}")
         # Move the agent to the calculated next position
         self.model.grid.move_agent(self, next_position)
