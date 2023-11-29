@@ -7,8 +7,6 @@ from agents.model import RandomModel
 from agents.agent import Car, ObstacleAgent
 
 # Size of the board:
-width = 28
-height = 28
 randomModel = None
 currentStep = 0
 
@@ -19,17 +17,15 @@ app = Flask("Traffic example")
 # The servers expects a POST request with the parameters in a form.
 @app.route('/init', methods=['POST'])
 def initModel():
-    global currentStep, randomModel, width, height
+    global currentStep, randomModel
 
     if request.method == 'POST':
-        width = int(request.form.get('width'))
-        height = int(request.form.get('height'))
         currentStep = 0
 
         print(request.form)
 
         # Create the model using the parameters sent by Unity
-        randomModel = RandomModel(width, height)
+        randomModel = RandomModel()
 
         # Return a message to Unity saying that the model was created successfully
         return jsonify({"message":"Parameters recieved, model initiated."})
@@ -43,9 +39,15 @@ def getAgents():
         # Get the positions of the agents and return them to Unity in JSON format.
         # Note that the positions are sent as a list of dictionaries, where each dictionary has the id and position of an agent.
         # The y coordinate is set to 1, since the agents are in a 3D world. The z coordinate corresponds to the row (y coordinate) of the grid in mesa.
-        agentPositions = [{"id": str(a.unique_id), "x": x, "y":1, "z":z} for a, (x, z) in randomModel.grid.coord_iter() if isinstance(a, Car)]
+
+        agentPositions = []
+        for agents, (x, z) in randomModel.grid.coord_iter():
+            for agent in agents:
+                if (isinstance(agent, Car)):
+                    agentPositions.append({"id": str(agent.unique_id), "x": x, "y":0.5, "z":z})
 
         return jsonify({'positions':agentPositions})
+
 
 # This route will be used to get the positions of the obstacles
 @app.route('/getObstacles', methods=['GET'])
@@ -55,9 +57,14 @@ def getObstacles():
     if request.method == 'GET':
         # Get the positions of the obstacles and return them to Unity in JSON format.
         # Same as before, the positions are sent as a list of dictionaries, where each dictionary has the id and position of an obstacle.
-        carPositions = [{"id": str(a.unique_id), "x": x, "y":1, "z":z} for a, (x, z) in randomModel.grid.coord_iter() if isinstance(a, ObstacleAgent)]
 
-        return jsonify({'positions':carPositions})
+        obstaclesPositions = []
+        for agents, (x, z) in randomModel.grid.coord_iter():
+            for agent in agents:
+                if (isinstance(agent, ObstacleAgent)):
+                    obstaclesPositions.append({"id": str(agent.unique_id), "x": x, "y":1, "z":z})
+
+        return jsonify({'positions':obstaclesPositions})
 
 # This route will be used to update the model
 @app.route('/update', methods=['GET'])

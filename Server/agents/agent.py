@@ -28,12 +28,7 @@ class Car(Agent):
             moore=True, # Boolean for whether to use Moore neighborhood (including diagonals) or Von Neumann (only up/down/left/right).
             include_center=True) 
         
-        # Checks which grid cells are empty
-        freeSpaces = list(map(self.model.grid.is_cell_empty, possible_steps))
-
-        next_moves = [p for p,f in zip(possible_steps, freeSpaces) if f == True]
-       
-        next_move = self.random.choice(next_moves)
+        next_move = self.random.choice(possible_steps)
 
         # Now move:
         if self.random.random() < 0.5:
@@ -46,15 +41,54 @@ class Car(Agent):
         """
         self.move()
 
-class ObstacleAgent(Agent):
+class Traffic_Light(Agent):
     """
-    Obstacle agent. Just to add obstacles to the grid.
+    Traffic light. Where the traffic lights are in the grid.
     """
+
+    def __init__(self, unique_id, model, state=False, timeToChange=10):
+        super().__init__(unique_id, model)
+        """
+        Creates a new Traffic light.
+        Args:
+            unique_id: The agent's ID
+            model: Model reference for the agent
+            state: Whether the traffic light is green or red
+            timeToChange: After how many step should the traffic light change color 
+        """
+        self.state = state
+        self.timeToChange = timeToChange
+
+    def step(self):
+        """ 
+        To change the state (green or red) of the traffic light in case you consider the time to change of each traffic light.
+        """
+        if self.model.schedule.steps % self.timeToChange == 0:
+            self.state = not self.state
+
+
+class Destination(Agent):
+    """
+    Destination agent. Where each car should go.
+    """
+
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
 
     def step(self):
-        pass  
+        pass
+
+
+class ObstacleAgent(Agent):
+    """
+    Obstacle agent. Just to add obstacles to the grid.
+    """
+
+    def __init__(self, unique_id, model):
+        super().__init__(unique_id, model)
+
+    def step(self):
+        pass
 
 
 class Road(Agent):
@@ -76,4 +110,3 @@ class Road(Agent):
 
     def step(self):
         pass
-
