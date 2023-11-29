@@ -1,6 +1,7 @@
 from mesa import Agent
+import random
 
-class RandomAgent(Agent):
+class Car(Agent):
     """
     Agent that moves randomly.
     Attributes:
@@ -15,7 +16,7 @@ class RandomAgent(Agent):
             model: Model reference for the agent
         """
         super().__init__(unique_id, model)
-        self.direction = 4
+        self.direction = "Undefined"
         self.steps_taken = 0
 
     def move(self):
@@ -54,3 +55,25 @@ class ObstacleAgent(Agent):
 
     def step(self):
         pass  
+
+
+class Road(Agent):
+    """
+    Road agent. Determines where the cars can move, and in which direction.
+    """
+
+    def __init__(self, unique_id, model, direction="TrafficLight"):
+        """
+        Creates a new road.
+        Args:
+            unique_id: The agent's ID
+            model: Model reference for the agent
+            direction: Direction where the cars can move
+        """
+        super().__init__(unique_id, model)
+
+        self.direction = direction
+
+    def step(self):
+        pass
+

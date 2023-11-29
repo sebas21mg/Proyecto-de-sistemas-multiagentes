@@ -89,7 +89,7 @@ public class AgentController : MonoBehaviour
 
     public GameObject agentPrefab, obstaclePrefab;
     // public GameObject agentPrefab, obstaclePrefab, floor;
-    public int NAgents, width, height;
+    public int width, height;
     public float timeToUpdate = 5.0f;
     private float timer, dt;
 
@@ -170,7 +170,6 @@ public class AgentController : MonoBehaviour
         */
         WWWForm form = new WWWForm();
 
-        form.AddField("NAgents", NAgents.ToString());
         form.AddField("width", width.ToString());
         form.AddField("height", height.ToString());
 

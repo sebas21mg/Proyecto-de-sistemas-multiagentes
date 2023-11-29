@@ -1,7 +1,8 @@
 from mesa import Model, agent
 from mesa.time import RandomActivation
 from mesa.space import SingleGrid
-from .agent import RandomAgent, ObstacleAgent
+from .agent import Car, ObstacleAgent
+import random
 
 class RandomModel(Model):
     """ 
@@ -10,40 +11,45 @@ class RandomModel(Model):
         N: Number of agents in the simulation
         height, width: The size of the grid to model
     """
-    def __init__(self, N, width, height):
-        self.num_agents = N
+    def __init__(self, width, height):
         # Multigrid is a special type of grid where each cell can contain multiple agents.
         self.grid = SingleGrid(width, height, torus = False) 
+        self.width = width
+        self.height = height
+        self.step_count = 0
 
         # RandomActivation is a scheduler that activates each agent once per step, in random order.
         self.schedule = RandomActivation(self)
         
         self.running = True 
 
-        # Creates the border of the grid
-        border = [(x,y) for y in range(height) for x in range(width) if y in [0, height-1] or x in [0, width - 1]]
 
-        # Add obstacles to the grid
-        for pos in border:
-            obs = ObstacleAgent(pos, self)
-            self.grid.place_agent(obs, pos)
+        # a = Car(1000, self) 
+        # self.schedule.add(a)
 
-        # Function to generate random positions
-        pos_gen = lambda w, h: (self.random.randrange(w), self.random.randrange(h))
+        # self.grid.place_agent(a, (1, 1))
+        self.add_corner_cars()
 
-        # Add the agent to a random empty grid cell
-        for i in range(self.num_agents):
+    def add_corner_cars(self):
+        corners = [
+            (0, 0),
+            (0, 1),
+            (0, self.height - 1),
+            (1, self.height - 1),
+            (self.width - 1, 0),
+            (self.width - 2, 1),
+            (self.width - 1, self.height - 1),
+            (self.width - 2, self.height - 2)
+        ]
 
-            a = RandomAgent(i+1000, self) 
-            self.schedule.add(a)
+        for corner in corners:
+            x, y = corner
+            agent = Car(f"car_{self.step_count}_{x}_{y}", self)
+            self.schedule.add(agent)
+            self.grid.place_agent(agent, (x, y))
 
-            pos = pos_gen(self.grid.width, self.grid.height)
-
-            while (not self.grid.is_cell_empty(pos)):
-                pos = pos_gen(self.grid.width, self.grid.height)
-
-            self.grid.place_agent(a, pos)
 
     def step(self):
         '''Advance the model by one step.'''
         self.schedule.step()
+        self.step_count += 1

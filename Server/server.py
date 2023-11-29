@@ -4,10 +4,9 @@
 
 from flask import Flask, request, jsonify
 from agents.model import RandomModel
-from agents.agent import RandomAgent, ObstacleAgent
+from agents.agent import Car, ObstacleAgent
 
 # Size of the board:
-number_agents = 10
 width = 28
 height = 28
 randomModel = None
@@ -20,19 +19,17 @@ app = Flask("Traffic example")
 # The servers expects a POST request with the parameters in a form.
 @app.route('/init', methods=['POST'])
 def initModel():
-    global currentStep, randomModel, number_agents, width, height
+    global currentStep, randomModel, width, height
 
     if request.method == 'POST':
-        number_agents = int(request.form.get('NAgents'))
         width = int(request.form.get('width'))
         height = int(request.form.get('height'))
         currentStep = 0
 
         print(request.form)
-        print(number_agents, width, height)
 
         # Create the model using the parameters sent by Unity
-        randomModel = RandomModel(number_agents, width, height)
+        randomModel = RandomModel(width, height)
 
         # Return a message to Unity saying that the model was created successfully
         return jsonify({"message":"Parameters recieved, model initiated."})
@@ -46,7 +43,7 @@ def getAgents():
         # Get the positions of the agents and return them to Unity in JSON format.
         # Note that the positions are sent as a list of dictionaries, where each dictionary has the id and position of an agent.
         # The y coordinate is set to 1, since the agents are in a 3D world. The z coordinate corresponds to the row (y coordinate) of the grid in mesa.
-        agentPositions = [{"id": str(a.unique_id), "x": x, "y":1, "z":z} for a, (x, z) in randomModel.grid.coord_iter() if isinstance(a, RandomAgent)]
+        agentPositions = [{"id": str(a.unique_id), "x": x, "y":1, "z":z} for a, (x, z) in randomModel.grid.coord_iter() if isinstance(a, Car)]
 
         return jsonify({'positions':agentPositions})
 
