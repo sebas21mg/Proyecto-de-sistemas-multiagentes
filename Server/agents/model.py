@@ -1,12 +1,12 @@
-from mesa import Model, agent
+from mesa import Model
 from mesa.time import RandomActivation
-from mesa.space import SingleGrid, MultiGrid
-from .agent import Car, ObstacleAgent, Road, Traffic_Light, Destination
+from mesa.space import MultiGrid
+from .agent import Car, Obstacle, Road, Traffic_Light, Destination
 import random
 import os
 import json
 
-class RandomModel(Model):
+class CityModel(Model):
     """ 
     Creates a new model with random agents.
     Args:
@@ -21,18 +21,18 @@ class RandomModel(Model):
         self.grid = None
         self.schedule = None
 
-        self.read_files()
+        self.create_city()
         self.add_corner_cars()
         self.running = True 
 
 
-    def read_files(self):
+    def create_city(self):
         dir_path = os.path.dirname(__file__)
 
-        data_dictionary_path = os.path.join(dir_path, '../city_files/mapDictionary.json')
+        map_dictionary_path = os.path.join(dir_path, '../city_files/mapDictionary.json')
         city_base_path = os.path.join(dir_path, '../city_files/2022_base.txt')
 
-        data_dictionary = json.load(open(data_dictionary_path))
+        map_dictionary = json.load(open(map_dictionary_path))
 
         with open(city_base_path) as baseFile:
             lines = baseFile.readlines()
@@ -46,30 +46,30 @@ class RandomModel(Model):
             # Goes through each character in the map file and creates the corresponding agent.
             for r, row in enumerate(lines):
                 for c, col in enumerate(row):
-                    # if col in ["v", "^", ">", "<", "L", "Q", "A", "F"]:
-                    #     agent = Road(f"r_{r*self.width+c}",
-                    #                  self, data_dictionary[col])
-                    #     self.grid.place_agent(agent, (c, self.height - r - 1))
-
-                    # elif col in ["S", "s"]:
-                    #     agent = Traffic_Light(
-                    #         f"tl_{r*self.width+c}", self, False if col == "S" else True, int(data_dictionary[col]))
-                    #     self.grid.place_agent(agent, (c, self.height - r - 1))
-                    #     self.schedule.add(agent)
-                    #     self.traffic_lights.append(agent)
-
-                    #     roadAgent = Road(f"r_{r*self.width+c}", self)
-                    #     self.grid.place_agent(
-                    #         roadAgent, (c, self.height - r - 1))
-
-                    if col == "#":
-                        agent = ObstacleAgent(f"ob_{r*self.width+c}", self)
+                    if col in ["v", "^", ">", "<", "L", "Q", "A", "F"]:
+                        agent = Road(f"r_{r*self.width+c}",
+                                     self, map_dictionary[col])
                         self.grid.place_agent(agent, (c, self.height - r - 1))
 
-                    # elif col == "D":
-                    #     agent = Destination(f"d_{r*self.width+c}", self)
-                    #     self.grid.place_agent(agent, (c, self.height - r - 1))
-                    #     self.destinations.append(agent.pos)
+                    elif col in ["S", "s"]:
+                        agent = Traffic_Light(
+                            f"tl_{r*self.width+c}", self, False if col == "S" else True, int(map_dictionary[col]))
+                        self.grid.place_agent(agent, (c, self.height - r - 1))
+                        self.schedule.add(agent)
+                        self.traffic_lights.append(agent)
+
+                        roadAgent = Road(f"r_{r*self.width+c}", self)
+                        self.grid.place_agent(
+                            roadAgent, (c, self.height - r - 1))
+
+                    if col == "#":
+                        agent = Obstacle(f"ob_{r*self.width+c}", self)
+                        self.grid.place_agent(agent, (c, self.height - r - 1))
+
+                    elif col == "D":
+                        agent = Destination(f"d_{r*self.width+c}", self)
+                        self.grid.place_agent(agent, (c, self.height - r - 1))
+                        self.destinations.append(agent.pos)
 
 
     def add_corner_cars(self):
@@ -86,12 +86,16 @@ class RandomModel(Model):
 
         for corner in corners:
             x, y = corner
-            agent = Car(f"car_{self.step_count}_{x}_{y}", self)
-            self.schedule.add(agent)
+            destination = random.choice(self.destinations)
+            agent = Car(f"car_{self.step_count}_{x}_{y}", self, destination)
             self.grid.place_agent(agent, (x, y))
+            self.schedule.add(agent)
 
 
     def step(self):
         '''Advance the model by one step.'''
         self.schedule.step()
         self.step_count += 1
+
+        if self.step_count % 10 == 0:
+            self.add_corner_cars()

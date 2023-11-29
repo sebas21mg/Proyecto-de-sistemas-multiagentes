@@ -2,6 +2,7 @@ from agent import *
 from model import CityModel
 from mesa.visualization import CanvasGrid, BarChartModule
 from mesa.visualization import ModularServer
+import os
 
 
 def agent_portrayal(agent):
@@ -45,7 +46,10 @@ def agent_portrayal(agent):
 width = 0
 height = 0
 
-with open('city_files/2022_base.txt') as baseFile:
+dir_path = os.path.dirname(__file__)
+city_base_path = os.path.join(dir_path, '../city_files/2022_base.txt')
+
+with open(city_base_path) as baseFile:
     lines = baseFile.readlines()
     width = len(lines[0])-1
     height = len(lines)

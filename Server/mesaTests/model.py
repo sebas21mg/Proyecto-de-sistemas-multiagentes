@@ -4,6 +4,7 @@ from mesa.space import MultiGrid
 from agent import *
 import json
 import random
+import os
 
 
 class CityModel(Model):
@@ -16,8 +17,13 @@ class CityModel(Model):
 
     def __init__(self, N):
 
+        dir_path = os.path.dirname(__file__)
+
+        map_dictionary_path = os.path.join(dir_path, '../city_files/mapDictionary.json')
+        city_base_path = os.path.join(dir_path, '../city_files/2022_base.txt')
+
         # Load the map dictionary. The dictionary maps the characters in the map file to the corresponding agent.
-        dataDictionary = json.load(open("city_files/mapDictionary.json"))
+        dataDictionary = json.load(open(map_dictionary_path))
 
         self.traffic_lights = []
         self.destinations = []
@@ -25,7 +31,7 @@ class CityModel(Model):
         
 
         # Load the map file. The map file is a text file where each character represents an agent.
-        with open('city_files/2022_base.txt') as baseFile:
+        with open(city_base_path) as baseFile:
             lines = baseFile.readlines()
             # Obtener las dimensiones de la simulación
             self.width = len(lines[0])-1
