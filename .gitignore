@@ -74,4 +74,4 @@ Simulacion/[Aa]ssets/[Ss]treamingAssets/aa/*
 
 
 # De Mesa
-Server/__pycache__/
+Server/agents/__pycache__/
