@@ -11,7 +11,7 @@ class Car(Agent):
         self.path = []  
         self.stopped = False  
         self.time_since_lane_change = 0
-        self.lane_change_cooldown = 5
+        self.lane_change_cooldown = 6
 
     def calculate_path(self):
         start = self.pos
@@ -59,6 +59,50 @@ class Car(Agent):
             elif dy == -1:
                 return 'Down'
             
+    def is_opposite_direction(self, pos):
+        """
+        Verifica si la dirección de la celda diagonal es opuesta a la dirección actual del coche.
+
+        Args:
+            pos (tuple): Coordenadas de la celda diagonal.
+
+        Returns:
+            bool: True si las direcciones son opuestas, False de lo contrario.
+        """
+        dx = pos[0] - self.pos[0]
+        dy = pos[1] - self.pos[1]
+        diagonal_direction = None
+
+        if dx == 1:
+            diagonal_direction = 'Right'
+        elif dx == -1:
+            diagonal_direction = 'Left'
+        elif dy == 1:
+            diagonal_direction = 'Up'
+        elif dy == -1:
+            diagonal_direction = 'Down'
+
+        return diagonal_direction and self.direction and self.are_opposite_directions(self.direction, diagonal_direction)
+    
+    def are_opposite_directions(self, dir1, dir2):
+        """
+        Verifica si dos direcciones son opuestas.
+
+        Args:
+            dir1 (str): Primera dirección.
+            dir2 (str): Segunda dirección.
+
+        Returns:
+            bool: True si son opuestas, False de lo contrario.
+        """
+        opposite_directions = {
+            'Up': 'Down',
+            'Down': 'Up',
+            'Left': 'Right',
+            'Right': 'Left'
+        }
+        return opposite_directions.get(dir1) == dir2
+    
     def check_for_lane_change(self):
         directions = {'Up': (0, 1), 'Down': (0, -1), 'Left': (-1, 0), 'Right': (1, 0)}
         if self.direction:
@@ -72,19 +116,22 @@ class Car(Agent):
                     neighborhood_cells = self.model.grid.get_neighborhood(lane_change_step, moore=True, include_center=True)
                     num_cars_in_next_position = sum(isinstance(c, Car) for cell in neighborhood_cells for c in self.model.grid.get_cell_list_contents([cell]))
         
-                    if num_cars_in_next_position >= 3 and self.time_since_lane_change >= self.lane_change_cooldown:
+                    if num_cars_in_next_position >= vision_range and self.time_since_lane_change >= self.lane_change_cooldown:
                         self.execute_lane_change()
     
     def execute_lane_change(self):
         diagonal_positions = [(self.pos[0] + ddx, self.pos[1] + ddy) for ddx, ddy in [(1, 1), (1, -1), (-1, 1), (-1, -1)]]
         valid_diagonal_positions = [(x, y) for x, y in diagonal_positions if self.model.validPosition(x, y)]
-        empty_diagonal_positions = [
+        
+        # Filtrar celdas diagonales con direcciones compatibles
+        valid_diagonal_positions = [
             pos for pos in valid_diagonal_positions 
-            if not any(isinstance(agent, (Car, Destination)) for agent in self.model.grid.get_cell_list_contents([pos]))
+            if not self.is_opposite_direction(pos)
+            and not any(isinstance(agent, (Car, Destination)) for agent in self.model.grid.get_cell_list_contents([pos]))
         ]
 
-        if empty_diagonal_positions:
-            new_position = empty_diagonal_positions[0]
+        if valid_diagonal_positions:
+            new_position = valid_diagonal_positions[0]
             self.model.grid.move_agent(self, new_position)
             self.recalculate_path(new_position, self.destination)
             self.stopped = False

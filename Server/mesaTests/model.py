@@ -92,13 +92,9 @@ class CityModel(Model):
         """
         corners = [
             (0, 0),
-            (0, 1),
             (0, self.height - 1),
-            (1, self.height - 1),
             (self.width - 1, 0),
-            (self.width - 2, 1),
-            (self.width - 1, self.height - 1),
-            (self.width - 2, self.height - 2)
+            (self.width - 1, self.height - 1)
         ]
         
 
@@ -303,6 +299,6 @@ class CityModel(Model):
         self.schedule.step()
         self.step_count += 1
         print(self.car_counter)
-        if self.step_count % 2 == 0:
+        if self.step_count % 1 == 0:
             self.add_cars()
 
