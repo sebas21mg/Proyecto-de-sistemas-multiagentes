@@ -241,11 +241,8 @@ public class AgentController : MonoBehaviour
                         prevPositions[agent.id] = currentPosition;
                     currPositions[agent.id] = newAgentPosition;
 
-                    Debug.Log("Curr: " + newAgentPosition + ", Dest: " + destination);
-
                     if (newAgentPosition == destination)
                     {
-                        Debug.Log("Llegó");
                         GameObject toDestroy = agents[agent.id];
 
                         foreach (Transform child in toDestroy.transform)
