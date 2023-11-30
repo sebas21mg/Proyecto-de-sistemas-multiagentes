@@ -4,6 +4,7 @@ from mesa.space import MultiGrid
 from .agent import *
 import json
 import random
+import requests
 import os
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -303,4 +304,28 @@ class CityModel(Model):
         print(f"Carros en destino: {self.carsInDestination}")
         if self.step_count % 3 == 0:
             self.add_cars()
+        if self.step_count % 100 == 0:
+            post(self.carsInDestination)
+        # Stop the simulation every 1000 steps
+        if self.step_count % 1000 == 0:
+            self.running = False
 
+def post(arrived_cars):
+    url = "http://52.1.3.19:8585/api/"
+    endpoint = "attempts"
+    
+    data = {
+        "year": 2023,
+        "classroom": 302,
+        "name": "Equipo 9 - Sebastian y Samuel",
+        "num_cars": arrived_cars
+    }
+    
+    headers = {
+        "Content-Type": "application/json"
+    }
+    
+    response = requests.post(url + endpoint, data = json.dumps(data), headers=headers)
+    
+    print("Request "+ "successfull" if response.status_code == 200 else "failed", "Status code:", response.status_code)
+    print("Response", response.json())
