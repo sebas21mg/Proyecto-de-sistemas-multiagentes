@@ -92,7 +92,7 @@ public class AgentController : MonoBehaviour
 
     bool updated = false, started = false;
 
-    public GameObject agentPrefab, obstaclePrefab, trafficLightPrefab, roadPrefab, destinationPrefab;
+    public GameObject agentPrefab, obstaclePrefab, trafficLightPrefab, roadPrefab, destinationPrefab, lightPrefab;
     public float timeToUpdate = 5.0f;
     private float timer, dt;
 
@@ -303,6 +303,7 @@ public class AgentController : MonoBehaviour
             foreach (AgentData trafficLight in trafficLightsData.positions)
             {
                 Instantiate(trafficLightPrefab, new Vector3(trafficLight.x, trafficLight.y, trafficLight.z), Quaternion.identity);
+                Instantiate(lightPrefab, new Vector3(trafficLight.x, trafficLight.y, trafficLight.z), Quaternion.identity);
             }
         }
     }
