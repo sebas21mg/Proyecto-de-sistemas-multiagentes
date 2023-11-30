@@ -30,6 +30,7 @@ class CityModel(Model):
         self.step_count = 0
         self.city_graph = nx.DiGraph()
         self.car_counter = 0 
+        self.carsInDestination = 0
         self.load_city_map(city_base_path)
         self.add_cars()
 
@@ -299,6 +300,7 @@ class CityModel(Model):
         self.schedule.step()
         self.step_count += 1
         print(self.car_counter)
+        print(f"Carros en destino: {self.carsInDestination}")
         if self.step_count % 3 == 0:
             self.add_cars()
 
