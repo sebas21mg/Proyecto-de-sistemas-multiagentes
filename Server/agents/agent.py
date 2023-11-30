@@ -11,7 +11,7 @@ class Car(Agent):
         self.path = []  
         self.stopped = False  
         self.time_since_lane_change = 0
-        self.lane_change_cooldown = 6
+        self.lane_change_cooldown = 4
         self.just_arrived = False
 
     def calculate_path(self):
@@ -143,7 +143,7 @@ class Car(Agent):
         directions = {'Up': (0, 1), 'Down': (0, -1), 'Left': (-1, 0), 'Right': (1, 0)}
         if self.direction:
             dx, dy = directions[self.direction]
-            vision_range = 3  # Número de celdas hacia adelante que se considerarán
+            vision_range = 2  # Número de celdas hacia adelante que se considerarán
             front_cell = self.get_cell_in_front()
 
             if front_cell is not None:
