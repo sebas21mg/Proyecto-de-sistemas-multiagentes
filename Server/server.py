@@ -4,7 +4,7 @@
 
 from flask import Flask, request, jsonify
 from agents.model import CityModel
-from agents.agent import Car, Obstacle, Traffic_Light, Road, Destination
+from agents.agent import *
 
 # Size of the board:
 randomModel = None
@@ -44,7 +44,7 @@ def getCars():
         # Note that the positions are sent as a list of dictionaries, where each dictionary has the id and position of an agent.
         # The y coordinate is set to 1, since the agents are in a 3D world. The z coordinate corresponds to the row (y coordinate) of the grid in mesa.
 
-        carsPos = [{"id": str(agent.unique_id), "x": x, "y": 1, "z": z - 1} for agents, (x, z)
+        carsPos = [{"id": str(agent.unique_id), "x": x, "y": 1, "z": z - 1, "destX": agent.destination[0], "destZ": agent.destination[1] - 1} for agents, (x, z)
                    in randomModel.grid.coord_iter() for agent in agents if isinstance(agent, Car)]
 
         return jsonify({'positions': carsPos})

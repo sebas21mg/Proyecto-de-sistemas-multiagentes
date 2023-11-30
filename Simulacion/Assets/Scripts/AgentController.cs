@@ -22,14 +22,16 @@ public class AgentData
         z (float): The z coordinate of the agent.
     */
     public string id;
-    public float x, y, z;
+    public float x, y, z, destX, destZ;
 
-    public AgentData(string id, float x, float y, float z)
+    public AgentData(string id, float x, float y, float z, float destX, float destZ)
     {
         this.id = id;
         this.x = x;
         this.y = y;
         this.z = z;
+        this.destX = destX;
+        this.destZ = destZ;
     }
 }
 
@@ -147,15 +149,11 @@ public class AgentController : MonoBehaviour
                 if (direction == new Vector3(0, 0, 0))
                     direction = prevDirections[agent.Key];
                 else
-                {
-                    direction = currentPosition - previousPosition;
                     prevDirections[agent.Key] = direction;
-                }
 
                 agents[agent.Key].gameObject.GetComponent<ApplyTransforms>().displacement = interpolated + new Vector3(0, -1, 1);
                 agents[agent.Key].gameObject.GetComponent<ApplyTransforms>().rotation = direction;
 
-                Debug.Log(interpolated + new Vector3(0, -1, 1));
             }
 
         }
@@ -228,6 +226,7 @@ public class AgentController : MonoBehaviour
             foreach (AgentData agent in agentsData.positions)
             {
                 Vector3 newAgentPosition = new Vector3(agent.x, agent.y, agent.z);
+                Vector3 destination = new Vector3(agent.destX, agent.y, agent.destZ);
 
                 if (!prevPositions.ContainsKey(agent.id))
                 {
@@ -241,6 +240,25 @@ public class AgentController : MonoBehaviour
                     if (currPositions.TryGetValue(agent.id, out currentPosition))
                         prevPositions[agent.id] = currentPosition;
                     currPositions[agent.id] = newAgentPosition;
+
+                    Debug.Log("Curr: " + newAgentPosition + ", Dest: " + destination);
+
+                    if (newAgentPosition == destination)
+                    {
+                        Debug.Log("Llegó");
+                        GameObject toDestroy = agents[agent.id];
+
+                        foreach (Transform child in toDestroy.transform)
+                        {
+                            Destroy(child.gameObject);
+                        }
+
+                        Destroy(toDestroy);
+                        agents.Remove(agent.id);
+                        prevPositions.Remove(agent.id);
+                        currPositions.Remove(agent.id);
+                        prevDirections.Remove(agent.id);
+                    }
                 }
             }
 

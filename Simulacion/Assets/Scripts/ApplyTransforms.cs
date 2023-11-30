@@ -117,6 +117,7 @@ public class ApplyTransforms : MonoBehaviour
         {
             Vector3 relativePos = car.position + wheelsPos[i];
             wheels[i] = Instantiate(wheelPrefab, relativePos, Quaternion.identity);
+            wheels[i].transform.parent = transform;
         }
     }
 }
