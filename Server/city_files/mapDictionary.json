@@ -7,8 +7,8 @@
     "v" : "Down",
     "^" : "Up",
     "D" : "Destination",
-    "L" : "UpRight",
-    "Q" : "UpLeft",
-    "A" : "DownLeft",
-    "F" : "DownRight"
+    "L" : ["Up", "Right"],
+    "Q" : ["Up", "Left"],
+    "A" : ["Down", "Left"],
+    "F" : ["Down", "Right"]
 }
