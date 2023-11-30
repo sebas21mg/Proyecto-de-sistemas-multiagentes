@@ -75,7 +75,7 @@ def getTrafficLights():
         # Get the positions of the obstacles and return them to Unity in JSON format.
         # Same as before, the positions are sent as a list of dictionaries, where each dictionary has the id and position of an obstacle.
 
-        trafficLightsPos = [{"id": str(agent.unique_id), "x": x, "y": 1, "z": z - 1} for agents, (x, z)
+        trafficLightsPos = [{"id": str(agent.unique_id), "x": x, "y": 1, "z": z - 1, "state": agent.state} for agents, (x, z)
                             in randomModel.grid.coord_iter() for agent in agents if isinstance(agent, Traffic_Light)]
 
         return jsonify({'positions': trafficLightsPos})

@@ -23,8 +23,9 @@ public class AgentData
     */
     public string id;
     public float x, y, z, destX, destZ;
+    public bool state;
 
-    public AgentData(string id, float x, float y, float z, float destX, float destZ)
+    public AgentData(string id, float x, float y, float z, float destX, float destZ, bool state)
     {
         this.id = id;
         this.x = x;
@@ -32,6 +33,7 @@ public class AgentData
         this.z = z;
         this.destX = destX;
         this.destZ = destZ;
+        this.state = state;
     }
 }
 
@@ -87,8 +89,9 @@ public class AgentController : MonoBehaviour
     string sendConfigEndpoint = "/init";
     string updateEndpoint = "/update";
     AgentsData agentsData, obstacleData, trafficLightsData, roadsData, destinationsData;
-    Dictionary<string, GameObject> agents;
+    Dictionary<string, GameObject> agents, trafficLights;
     Dictionary<string, Vector3> prevPositions, currPositions, prevDirections;
+    Dictionary<string, bool> trafficLightsStates;
 
     bool updated = false, started = false;
 
@@ -111,6 +114,8 @@ public class AgentController : MonoBehaviour
         prevDirections = new Dictionary<string, Vector3>();
 
         agents = new Dictionary<string, GameObject>();
+        trafficLights = new Dictionary<string, GameObject>();
+        trafficLightsStates = new Dictionary<string, bool>();
 
         // Sets the floor scale and position.
         // floor.transform.localScale = new Vector3((float)width / 10, 1, (float)height / 10);
@@ -169,6 +174,7 @@ public class AgentController : MonoBehaviour
         else
         {
             StartCoroutine(GetCarsData());
+            StartCoroutine(GetTrafficLightsData());
         }
     }
 
@@ -295,13 +301,27 @@ public class AgentController : MonoBehaviour
         {
             trafficLightsData = JsonUtility.FromJson<AgentsData>(www.downloadHandler.text);
 
-            // Debug.Log(trafficLightsData.positions);
-
             foreach (AgentData trafficLight in trafficLightsData.positions)
             {
-                Instantiate(trafficLightPrefab, new Vector3(trafficLight.x, trafficLight.y, trafficLight.z), Quaternion.identity);
-                Instantiate(lightPrefab, new Vector3(trafficLight.x, trafficLight.y, trafficLight.z), Quaternion.identity);
+                Vector3 newTrafficLightPos = new Vector3(trafficLight.x, trafficLight.y, trafficLight.z);
+
+                if (!trafficLights.ContainsKey(trafficLight.id))
+                {
+                    Instantiate(trafficLightPrefab, new Vector3(trafficLight.x, trafficLight.y, trafficLight.z), Quaternion.identity);
+                    trafficLights[trafficLight.id] = Instantiate(lightPrefab, newTrafficLightPos, Quaternion.identity);
+                    trafficLightsStates[trafficLight.id] = trafficLight.state;
+                }
+                else
+                {
+                    trafficLightsStates[trafficLight.id] = trafficLight.state;
+                }
+
+                if (trafficLightsStates[trafficLight.id])
+                    trafficLights[trafficLight.id].GetComponent<Light>().color = Color.green;
+                else
+                    trafficLights[trafficLight.id].GetComponent<Light>().color = Color.red;
             }
+
         }
     }
 
