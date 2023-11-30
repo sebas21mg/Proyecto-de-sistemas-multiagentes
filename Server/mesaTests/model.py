@@ -299,6 +299,6 @@ class CityModel(Model):
         self.schedule.step()
         self.step_count += 1
         print(self.car_counter)
-        if self.step_count % 3 == 0:
+        if self.step_count % 1 == 0:
             self.add_cars()
 
