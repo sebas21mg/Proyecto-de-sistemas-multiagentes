@@ -14,6 +14,9 @@ class Car(Agent):
         self.lane_change_cooldown = 6
 
     def calculate_path(self):
+        """
+        Calcula el camino más corto desde la posición actual del coche hasta su destino utilizando el algoritmo A*.
+        """
         start = self.pos
         goal = self.destination
         city_graph = self.model.city_graph
@@ -22,6 +25,16 @@ class Car(Agent):
         return path
 
     def can_move(self, current_position, next_position):
+        """
+        Verifica si el coche puede moverse a la siguiente posición.
+
+        Args:
+            current_position (tuple): Posición actual del coche.
+            next_position (tuple): Próxima posición a la que el coche intentará moverse.
+
+        Returns:
+            bool: True si el coche puede moverse, False de lo contrario.
+        """
         contents = self.model.grid.get_cell_list_contents([next_position])
 
         for content in contents:
@@ -33,9 +46,24 @@ class Car(Agent):
         return True
 
     def is_at_destination(self, next_pos):
+        """
+        Verifica si el coche está en su destino.
+
+        Args:
+            next_pos (tuple): Próxima posición del coche.
+
+        Returns:
+            bool: True si el coche está en su destino, False de lo contrario.
+        """
         return next_pos == self.destination
 
     def get_cell_in_front(self):
+        """
+        Obtiene la posición de la celda frente al coche en función de su dirección.
+
+        Returns:
+            tuple: Coordenadas de la celda frente al coche.
+        """
         directions = {'Up': (0, 1), 'Down': (0, -1), 'Left': (-1, 0), 'Right': (1, 0)}
         direction = self.get_direction()
 
@@ -47,6 +75,12 @@ class Car(Agent):
         return None
     
     def get_direction(self):
+        """
+        Obtiene la dirección del coche en función de su camino.
+
+        Returns:
+            str: Dirección del coche ('Up', 'Down', 'Left', 'Right').
+        """
         if self.path:
             dx = self.path[0][0] - self.pos[0]
             dy = self.path[0][1] - self.pos[1]
@@ -104,6 +138,9 @@ class Car(Agent):
         return opposite_directions.get(dir1) == dir2
     
     def check_for_lane_change(self):
+        """
+        Verifica si el coche debe realizar un cambio de carril y lo ejecuta si es necesario.
+        """
         directions = {'Up': (0, 1), 'Down': (0, -1), 'Left': (-1, 0), 'Right': (1, 0)}
         if self.direction:
             dx, dy = directions[self.direction]
@@ -120,6 +157,9 @@ class Car(Agent):
                         self.execute_lane_change()
     
     def execute_lane_change(self):
+        """
+        Ejecuta el cambio de carril del coche a una posición diagonal válida.
+        """
         diagonal_positions = [(self.pos[0] + ddx, self.pos[1] + ddy) for ddx, ddy in [(1, 1), (1, -1), (-1, 1), (-1, -1)]]
         valid_diagonal_positions = [(x, y) for x, y in diagonal_positions if self.model.validPosition(x, y)]
         
@@ -139,6 +179,13 @@ class Car(Agent):
             self.time_since_lane_change = 0
     
     def recalculate_path(self, start=None, destination=None):
+        """
+        Vuelve a calcular la ruta del coche.
+
+        Args:
+            start (tuple): Nueva posición inicial.
+            destination (tuple): Nuevo destino.
+        """
         if start:
             self.pos = start
         if destination:
@@ -148,10 +195,12 @@ class Car(Agent):
             self.path = self.calculate_path()
 
         except nx.NetworkXNoPath:
-
             self.path = []
     
     def move(self):
+        """
+        Mueve el coche en la dirección de su ruta.
+        """
         self.time_since_lane_change += 1
         self.check_for_lane_change()
 
@@ -175,6 +224,12 @@ class Car(Agent):
                         self.stopped = True
 
     def try_to_move(self, next_position):
+        """
+        Intenta mover el coche a la siguiente posición en su ruta.
+
+        Args:
+            next_position (tuple): Próxima posición a la que el coche intentará moverse.
+        """
         self.direction = self.get_direction()
         if self.can_move(self.pos, next_position):
             self.model.grid.move_agent(self, next_position)
@@ -183,6 +238,9 @@ class Car(Agent):
             self.stopped = True
 
     def step(self):
+        """
+        Avanza un paso en la simulación.
+        """
         self.move()
 
 
@@ -193,6 +251,9 @@ class Traffic_Light(Agent):
         self.timeToChange = timeToChange
 
     def step(self):
+        """
+        Avanza un paso en la simulación y cambia su estado (rojo o verde) a intervalos regulares de tiempo.
+        """
         if self.model.schedule.steps % self.timeToChange == 0:
             self.state = not self.state
 
@@ -202,6 +263,9 @@ class Destination(Agent):
         super().__init__(unique_id, model)
 
     def step(self):
+        """
+        Avanza un paso en la simulación (sin hacer nada).
+        """
         pass
 
 
@@ -210,6 +274,9 @@ class Obstacle(Agent):
         super().__init__(unique_id, model)
 
     def step(self):
+        """
+        Avanza un paso en la simulación (sin hacer nada).
+        """
         pass
 
 
@@ -219,4 +286,7 @@ class Road(Agent):
         self.direction = direction
 
     def step(self):
+        """
+        Avanza un paso en la simulación (sin hacer nada).
+        """
         pass
