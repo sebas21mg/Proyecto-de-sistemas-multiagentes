@@ -71,20 +71,17 @@ class Car(Agent):
                 if self.model.validPosition(*lane_change_step):
                     neighborhood_cells = self.model.grid.get_neighborhood(lane_change_step, moore=True, include_center=True)
                     num_cars_in_next_position = sum(isinstance(c, Car) for cell in neighborhood_cells for c in self.model.grid.get_cell_list_contents([cell]))
-                    print(f"{self.unique_id} : {num_cars_in_next_position}")
+        
                     if num_cars_in_next_position >= 3 and self.time_since_lane_change >= self.lane_change_cooldown:
                         self.execute_lane_change()
     
     def execute_lane_change(self):
         diagonal_positions = [(self.pos[0] + ddx, self.pos[1] + ddy) for ddx, ddy in [(1, 1), (1, -1), (-1, 1), (-1, -1)]]
-        print(f"{self.unique_id} con {diagonal_positions}")
         valid_diagonal_positions = [(x, y) for x, y in diagonal_positions if self.model.validPosition(x, y)]
-        print(f"{self.unique_id} con {valid_diagonal_positions}")
         empty_diagonal_positions = [
             pos for pos in valid_diagonal_positions 
             if not any(isinstance(agent, (Car, Destination)) for agent in self.model.grid.get_cell_list_contents([pos]))
         ]
-        print(f"{self.unique_id} con {empty_diagonal_positions}")
 
         if empty_diagonal_positions:
             new_position = empty_diagonal_positions[0]
@@ -102,9 +99,9 @@ class Car(Agent):
 
         try:
             self.path = self.calculate_path()
-            print(f"Car {self.unique_id} recalculated path from {self.pos} to {self.destination}")
+
         except nx.NetworkXNoPath:
-            print(f"No path could be recalculated for {self.unique_id} from {self.pos} to {self.destination}")
+
             self.path = []
     
     def move(self):

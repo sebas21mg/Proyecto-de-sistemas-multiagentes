@@ -29,7 +29,7 @@ class CityModel(Model):
         self.destinations = []
         self.step_count = 0
         self.city_graph = nx.DiGraph()
-
+        self.car_counter = 0 
         self.load_city_map(city_base_path)
         self.add_cars()
 
@@ -112,9 +112,11 @@ class CityModel(Model):
                 road_direction = self.get_road_direction(x, y)
                 car_agent = Car(f"car_{self.step_count}_{x}_{y}", self, destination)
                 car_agent.direction = road_direction
-                print(f"Car: {car_agent.unique_id} with destination: {car_agent.destination}")
                 self.grid.place_agent(car_agent, (x, y))
                 self.schedule.add(car_agent)
+                
+                # Incrementar el contador de carros
+                self.car_counter += 1
     
     def get_road_direction(self, x, y):
         """
@@ -271,6 +273,9 @@ class CityModel(Model):
     def remove_car(self, car):
         self.schedule.remove(car)
         self.grid.remove_agent(car)
+        
+        # Decrementar el contador de carros
+        self.car_counter -= 1
     
     def weightEdges(self, x, y, nx, ny):
         """
@@ -297,7 +302,7 @@ class CityModel(Model):
         """
         self.schedule.step()
         self.step_count += 1
-        
-        if self.step_count % 1 == 0:
+        print(self.car_counter)
+        if self.step_count % 2 == 0:
             self.add_cars()
 
