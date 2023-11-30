@@ -21,7 +21,7 @@ class CityModel(Model):
         dir_path = os.path.dirname(__file__)
 
         map_dictionary_path = os.path.join(dir_path, '../city_files/mapDictionary.json')
-        city_base_path = os.path.join(dir_path, '../city_files/2022_base.txt')
+        city_base_path = os.path.join(dir_path, '../city_files/2023_base.txt')
 
         # Cargar el diccionario del mapa. El diccionario mapea los caracteres en el archivo del mapa con el agente correspondiente.
         self.map_data = json.load(open(map_dictionary_path))
@@ -299,6 +299,6 @@ class CityModel(Model):
         self.schedule.step()
         self.step_count += 1
         print(self.car_counter)
-        if self.step_count % 1 == 0:
+        if self.step_count % 3 == 0:
             self.add_cars()
 
