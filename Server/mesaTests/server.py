@@ -54,12 +54,10 @@ with open(city_base_path) as baseFile:
     width = len(lines[0])-1
     height = len(lines)
 
-model_params = {"N": 5}
-
 print(width, height)
 grid = CanvasGrid(agent_portrayal, width, height, 500, 500)
 
-server = ModularServer(CityModel, [grid], "Traffic Base", model_params)
+server = ModularServer(CityModel, [grid], "Traffic Base")
 
 server.port = 8521  # The default
 server.launch()
