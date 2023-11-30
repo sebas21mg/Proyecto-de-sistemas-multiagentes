@@ -6,6 +6,7 @@ import random
 import os
 import json
 
+
 class CityModel(Model):
     """ 
     Creates a new model with random agents.
@@ -13,6 +14,7 @@ class CityModel(Model):
         N: Number of agents in the simulation
         height, width: The size of the grid to model
     """
+
     def __init__(self):
 
         self.traffic_lights = []
@@ -23,13 +25,13 @@ class CityModel(Model):
 
         self.create_city()
         self.add_corner_cars()
-        self.running = True 
-
+        self.running = True
 
     def create_city(self):
         dir_path = os.path.dirname(__file__)
 
-        map_dictionary_path = os.path.join(dir_path, '../city_files/mapDictionary.json')
+        map_dictionary_path = os.path.join(
+            dir_path, '../city_files/mapDictionary.json')
         city_base_path = os.path.join(dir_path, '../city_files/2022_base.txt')
 
         map_dictionary = json.load(open(map_dictionary_path))
@@ -42,7 +44,7 @@ class CityModel(Model):
 
             self.grid = MultiGrid(self.width, self.height, torus=False)
             self.schedule = RandomActivation(self)
-            
+
             # Goes through each character in the map file and creates the corresponding agent.
             for r, row in enumerate(lines):
                 for c, col in enumerate(row):
@@ -71,7 +73,6 @@ class CityModel(Model):
                         self.grid.place_agent(agent, (c, self.height - r - 1))
                         self.destinations.append(agent.pos)
 
-
     def add_corner_cars(self):
         corners = [
             (0, 0),
@@ -90,7 +91,6 @@ class CityModel(Model):
             agent = Car(f"car_{self.step_count}_{x}_{y}", self, destination)
             self.grid.place_agent(agent, (x, y))
             self.schedule.add(agent)
-
 
     def step(self):
         '''Advance the model by one step.'''

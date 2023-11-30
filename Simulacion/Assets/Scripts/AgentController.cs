@@ -86,7 +86,7 @@ public class AgentController : MonoBehaviour
     string updateEndpoint = "/update";
     AgentsData agentsData, obstacleData, trafficLightsData, roadsData, destinationsData;
     Dictionary<string, GameObject> agents;
-    Dictionary<string, Vector3> prevPositions, currPositions;
+    Dictionary<string, Vector3> prevPositions, currPositions, prevDirections;
 
     bool updated = false, started = false;
 
@@ -106,6 +106,7 @@ public class AgentController : MonoBehaviour
         // prevPositions stores the previous positions of the agents, while currPositions stores the current positions.
         prevPositions = new Dictionary<string, Vector3>();
         currPositions = new Dictionary<string, Vector3>();
+        prevDirections = new Dictionary<string, Vector3>();
 
         agents = new Dictionary<string, GameObject>();
 
@@ -133,7 +134,7 @@ public class AgentController : MonoBehaviour
             timer -= Time.deltaTime;
             dt = 1.0f - (timer / timeToUpdate);
 
-            // Iterates over the agents to update their positions.
+            // Iterates over the agents to update their positions. 
             // The positions are interpolated between the previous and current positions.
             foreach (var agent in currPositions)
             {
@@ -141,14 +142,22 @@ public class AgentController : MonoBehaviour
                 Vector3 previousPosition = prevPositions[agent.Key];
 
                 Vector3 interpolated = Vector3.Lerp(previousPosition, currentPosition, dt);
-                Vector3 direction = currentPosition - interpolated;
 
-                agents[agent.Key].transform.localPosition = interpolated;
-                if (direction != Vector3.zero) agents[agent.Key].transform.rotation = Quaternion.LookRotation(direction);
+                Vector3 direction = currentPosition - previousPosition;
+                if (direction == new Vector3(0, 0, 0))
+                    direction = prevDirections[agent.Key];
+                else
+                {
+                    direction = currentPosition - previousPosition;
+                    prevDirections[agent.Key] = direction;
+                }
+
+                agents[agent.Key].gameObject.GetComponent<ApplyTransforms>().displacement = interpolated + new Vector3(0, -1, 1);
+                agents[agent.Key].gameObject.GetComponent<ApplyTransforms>().rotation = direction;
+
+                Debug.Log(interpolated + new Vector3(0, -1, 1));
             }
 
-            // float t = (timer / timeToUpdate);
-            // dt = t * t * ( 3f - 2f*t);
         }
     }
 
@@ -188,8 +197,8 @@ public class AgentController : MonoBehaviour
         }
         else
         {
-            Debug.Log("Configuration upload complete!");
-            Debug.Log("Getting Agents positions");
+            // Debug.Log("Configuration upload complete!");
+            // Debug.Log("Getting Agents positions");
 
             // Once the configuration has been sent, it launches a coroutine to get the agents data.
             StartCoroutine(GetCarsData());
@@ -209,6 +218,7 @@ public class AgentController : MonoBehaviour
 
         if (www.result != UnityWebRequest.Result.Success)
             Debug.Log(www.error);
+
         else
         {
             // Once the data has been received, it is stored in the agentsData variable.
@@ -219,10 +229,11 @@ public class AgentController : MonoBehaviour
             {
                 Vector3 newAgentPosition = new Vector3(agent.x, agent.y, agent.z);
 
-                if (!started)
+                if (!prevPositions.ContainsKey(agent.id))
                 {
                     prevPositions[agent.id] = newAgentPosition;
-                    agents[agent.id] = Instantiate(agentPrefab, newAgentPosition, Quaternion.identity);
+                    prevDirections[agent.id] = new Vector3(1, 0, 0);
+                    agents[agent.id] = Instantiate(agentPrefab, new Vector3(0, 0, -1), Quaternion.identity);
                 }
                 else
                 {
@@ -231,7 +242,6 @@ public class AgentController : MonoBehaviour
                         prevPositions[agent.id] = currentPosition;
                     currPositions[agent.id] = newAgentPosition;
                 }
-                Debug.Log(agent.id);
             }
 
             updated = true;
@@ -250,7 +260,7 @@ public class AgentController : MonoBehaviour
         {
             obstacleData = JsonUtility.FromJson<AgentsData>(www.downloadHandler.text);
 
-            Debug.Log(obstacleData.positions);
+            // Debug.Log(obstacleData.positions);
 
             foreach (AgentData obstacle in obstacleData.positions)
             {
@@ -270,7 +280,7 @@ public class AgentController : MonoBehaviour
         {
             trafficLightsData = JsonUtility.FromJson<AgentsData>(www.downloadHandler.text);
 
-            Debug.Log(trafficLightsData.positions);
+            // Debug.Log(trafficLightsData.positions);
 
             foreach (AgentData trafficLight in trafficLightsData.positions)
             {
@@ -290,7 +300,7 @@ public class AgentController : MonoBehaviour
         {
             roadsData = JsonUtility.FromJson<AgentsData>(www.downloadHandler.text);
 
-            Debug.Log(roadsData.positions);
+            // Debug.Log(roadsData.positions);
 
             foreach (AgentData road in roadsData.positions)
             {
@@ -310,7 +320,7 @@ public class AgentController : MonoBehaviour
         {
             destinationsData = JsonUtility.FromJson<AgentsData>(www.downloadHandler.text);
 
-            Debug.Log(destinationsData.positions);
+            // Debug.Log(destinationsData.positions);
 
             foreach (AgentData destination in destinationsData.positions)
             {
