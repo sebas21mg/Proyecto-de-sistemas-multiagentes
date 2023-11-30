@@ -12,6 +12,7 @@ class Car(Agent):
         self.stopped = False  
         self.time_since_lane_change = 0
         self.lane_change_cooldown = 6
+        self.just_arrived = False
 
     def calculate_path(self):
         """
@@ -45,17 +46,15 @@ class Car(Agent):
 
         return True
 
-    def is_at_destination(self, next_pos):
+    def is_at_destination(self):
         """
         Verifica si el coche está en su destino.
 
-        Args:
-            next_pos (tuple): Próxima posición del coche.
 
         Returns:
             bool: True si el coche está en su destino, False de lo contrario.
         """
-        return next_pos == self.destination
+        return self.pos == self.destination
 
     def get_cell_in_front(self):
         """
@@ -204,17 +203,13 @@ class Car(Agent):
         self.time_since_lane_change += 1
         self.check_for_lane_change()
 
-        if not self.path:
-            self.path = self.calculate_path()
+        if not self.is_at_destination():
+            if not self.path:
+                self.path = self.calculate_path()
 
-        if self.path:
-            next_position = self.path[0]
-
-            if self.is_at_destination(next_position):
-                self.model.grid.move_agent(self, next_position)
-                self.model.remove_car(self)
-                self.model.carsInDestination += 1
-            else:
+            if self.path:
+                next_position = self.path[0]
+            
                 self.try_to_move(next_position)
 
                 front_cell = self.get_cell_in_front()
@@ -224,6 +219,11 @@ class Car(Agent):
 
                     if not self.can_move(self.pos, front_cell) or next_cell:
                         self.stopped = True
+
+        # Verificar si está en el destino y quitar el coche
+        elif self.is_at_destination():
+            self.model.remove_car(self)
+            self.model.carsInDestination += 1
 
     def try_to_move(self, next_position):
         """
