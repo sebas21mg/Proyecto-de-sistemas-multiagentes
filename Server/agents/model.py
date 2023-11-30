@@ -302,6 +302,7 @@ class CityModel(Model):
         self.step_count += 1
         print(self.car_counter)
         print(f"Carros en destino: {self.carsInDestination}")
+        print(self.step_count)
         if self.step_count % 3 == 0:
             self.add_cars()
         if self.step_count % 100 == 0:
