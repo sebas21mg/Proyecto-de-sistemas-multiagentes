@@ -211,7 +211,9 @@ class Car(Agent):
             next_position = self.path[0]
 
             if self.is_at_destination(next_position):
+                self.model.grid.move_agent(self, next_position)
                 self.model.remove_car(self)
+                self.model.carsInDestination += 1
             else:
                 self.try_to_move(next_position)
 
