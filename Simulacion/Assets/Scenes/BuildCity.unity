@@ -341,7 +341,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   layout: {fileID: 4900000, guid: 801507f4d2c783141bb511c83224ce43, type: 3}
   roadPrefab: {fileID: 3240343348373693069, guid: 646fc54ff3078ce94bbdbd0f0d4c4a05, type: 3}
-  buildingPrefab: {fileID: 33555395739272859, guid: 10a584233fb38a918af771ddce837268, type: 3}
+  buildingPrefab: {fileID: 33555395739272859, guid: f79a5ba31d43f5043bb337b1d59e965a, type: 3}
   semaphorePrefab: {fileID: 3195853777202321853, guid: 5e141b94be9ff9643803aa7c5b4d1fb0, type: 3}
   tileSize: 1
 --- !u!4 &1457529884
@@ -377,7 +377,7 @@ MonoBehaviour:
   roadPrefab: {fileID: 961990229689801968, guid: d6798cc54096f554bb2c24b77ece5f3c, type: 3}
   destinationPrefab: {fileID: 961990229689801968, guid: d6798cc54096f554bb2c24b77ece5f3c, type: 3}
   lightPrefab: {fileID: 2402573709095855567, guid: af51782c8c2b15e4e85343148ae0a902, type: 3}
-  timeToUpdate: 0.1
+  timeToUpdate: 1
 --- !u!850595691 &1515965292
 LightingSettings:
   m_ObjectHideFlags: 0
