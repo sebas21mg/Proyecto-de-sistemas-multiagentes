@@ -143,7 +143,7 @@ class Car(Agent):
         directions = {'Up': (0, 1), 'Down': (0, -1), 'Left': (-1, 0), 'Right': (1, 0)}
         if self.direction:
             dx, dy = directions[self.direction]
-            vision_range = 2  # Número de celdas hacia adelante que se considerarán
+            vision_range = 3  # Número de celdas hacia adelante que se considerarán
             front_cell = self.get_cell_in_front()
 
             if front_cell is not None:

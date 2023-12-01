@@ -266,7 +266,7 @@ class CityModel(Model):
                         ddx, ddy = (directions[diag[0]][0] + directions[diag[1]][0], directions[diag[0]][1] + directions[diag[1]][1])
                         nnx, nny = x + ddx, y + ddy
                         if self.validPosition(nnx, nny) and not any(isinstance(agent, Traffic_Light) for agent in self.grid.get_cell_list_contents((nnx, nny))):
-                            self.city_graph.add_edge((x, y), (nnx, nny), weight=weight * 1.5)
+                            self.city_graph.add_edge((x, y), (nnx, nny), weight=weight * 2)   
                             
     def remove_car(self, car):
         self.schedule.remove(car)
@@ -302,13 +302,13 @@ class CityModel(Model):
         self.step_count += 1
         print(self.car_counter)
         print(f"Carros en destino: {self.carsInDestination}")
-        if self.step_count % 3 == 0:
+        if self.step_count % 1 == 0:
             self.add_cars()
-        if self.step_count % 100 == 0:
-            post(self.carsInDestination)
+        #if self.step_count % 100 == 0:
+            #post(self.carsInDestination)
         # Stop the simulation every 1000 steps
-        if self.step_count % 1000 == 0:
-            self.running = False
+        # if self.step_count % 1000 == 0:
+        #     self.running = False
 
 def post(arrived_cars):
     url = "http://52.1.3.19:8585/api/"
