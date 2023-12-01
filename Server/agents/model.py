@@ -9,6 +9,7 @@ import os
 import networkx as nx
 import matplotlib.pyplot as plt
 
+
 class CityModel(Model):
     """ 
     Crea un modelo basado en un mapa de ciudad.
@@ -21,7 +22,8 @@ class CityModel(Model):
 
         dir_path = os.path.dirname(__file__)
 
-        map_dictionary_path = os.path.join(dir_path, '../city_files/mapDictionary.json')
+        map_dictionary_path = os.path.join(
+            dir_path, '../city_files/mapDictionary.json')
         city_base_path = os.path.join(dir_path, '../city_files/2023_base.txt')
 
         # Cargar el diccionario del mapa. El diccionario mapea los caracteres en el archivo del mapa con el agente correspondiente.
@@ -30,7 +32,7 @@ class CityModel(Model):
         self.destinations = []
         self.step_count = 0
         self.city_graph = nx.DiGraph()
-        self.car_counter = 0 
+        self.car_counter = 0
         self.carsInDestination = 0
         self.load_city_map(city_base_path)
         self.add_cars()
@@ -67,16 +69,20 @@ class CityModel(Model):
             col (str): Carácter que representa el tipo de agente en la posición (r, c).
         """
         if col in ["v", "^", ">", "<", "L", "Q", "A", "F"]:
-            road_agent = Road(f"road_{r*self.width+c}", self, self.map_data[col])
+            road_agent = Road(f"road_{r*self.width+c}",
+                              self, self.map_data[col])
             self.grid.place_agent(road_agent, (c, self.height - r - 1))
             self.city_graph.add_node((c, self.height - r - 1), type='road')
 
         elif col in ["S", "s"]:
-            traffic_light_agent = Traffic_Light(f"tl_{r*self.width+c}", self, False if col == "S" else True, int(self.map_data[col]))
-            self.grid.place_agent(traffic_light_agent, (c, self.height - r - 1))
+            traffic_light_agent = Traffic_Light(
+                f"tl_{r*self.width+c}", self, False if col == "S" else True, int(self.map_data[col]))
+            self.grid.place_agent(traffic_light_agent,
+                                  (c, self.height - r - 1))
             self.schedule.add(traffic_light_agent)
             self.traffic_lights.append(traffic_light_agent)
-            self.city_graph.add_node((c, self.height - r - 1), type='traffic_light')
+            self.city_graph.add_node(
+                (c, self.height - r - 1), type='traffic_light')
 
         elif col == "#":
             obstacle_agent = Obstacle(f"ob_{r*self.width+c}", self)
@@ -86,7 +92,8 @@ class CityModel(Model):
             destination_agent = Destination(f"dest_{r*self.width+c}", self)
             self.grid.place_agent(destination_agent, (c, self.height - r - 1))
             self.destinations.append(destination_agent.pos)
-            self.city_graph.add_node((c, self.height - r - 1), type='destination')
+            self.city_graph.add_node(
+                (c, self.height - r - 1), type='destination')
 
     def add_cars(self):
         """
@@ -98,24 +105,24 @@ class CityModel(Model):
             (self.width - 1, 0),
             (self.width - 1, self.height - 1)
         ]
-        
 
         for corner in corners:
             x, y = corner
-            
+
             # Check if the position is available
             if self.is_position_available(x, y):
                 # Once a position is available, add the car
                 destination = random.choice(self.destinations)
                 road_direction = self.get_road_direction(x, y)
-                car_agent = Car(f"car_{self.step_count}_{x}_{y}", self, destination)
+                car_agent = Car(
+                    f"car_{self.step_count}_{x}_{y}", self, destination)
                 car_agent.direction = road_direction
                 self.grid.place_agent(car_agent, (x, y))
                 self.schedule.add(car_agent)
-                
+
                 # Incrementar el contador de carros
                 self.car_counter += 1
-    
+
     def get_road_direction(self, x, y):
         """
         Obtiene la dirección del camino en la posición dada.
@@ -127,13 +134,14 @@ class CityModel(Model):
         Returns:
             str: Dirección del camino ('Up', 'Down', 'Left', 'Right').
         """
-        possible_roads = self.grid.get_neighbors((x, y), moore=True, include_center=True, radius=1)
+        possible_roads = self.grid.get_neighbors(
+            (x, y), moore=True, include_center=True, radius=1)
         for road in possible_roads:
             if isinstance(road, Road):
                 return road.direction
 
         return "Undefined"
-    
+
     def is_position_available(self, x, y):
         """
         Verifica si la posición dada en el mapa está disponible.
@@ -159,7 +167,8 @@ class CityModel(Model):
             bool: True si la posición es válida, False de lo contrario.
         """
         return 0 <= x < self.width and 0 <= y < self.height and (
-            any(isinstance(agent, (Road, Traffic_Light, Destination)) for agent in self.grid.get_cell_list_contents((x, y)))
+            any(isinstance(agent, (Road, Traffic_Light, Destination))
+                for agent in self.grid.get_cell_list_contents((x, y)))
         )
 
     def add_traffic_light_edges(self, x, y, directions):
@@ -174,14 +183,18 @@ class CityModel(Model):
         for direction_name, (dx, dy) in directions.items():
             adjacent_x, adjacent_y = x + dx, y + dy
             if self.validPosition(adjacent_x, adjacent_y) and any(isinstance(agent, Road) for agent in self.grid.get_cell_list_contents((adjacent_x, adjacent_y))):
-                adjacent_agents = self.grid.get_cell_list_contents((adjacent_x, adjacent_y))
-                road_agent = next((agent for agent in adjacent_agents if isinstance(agent, Road)), None)
+                adjacent_agents = self.grid.get_cell_list_contents(
+                    (adjacent_x, adjacent_y))
+                road_agent = next(
+                    (agent for agent in adjacent_agents if isinstance(agent, Road)), None)
                 if road_agent:
                     if self.aligning_directions(road_agent, x, y, adjacent_x, adjacent_y):
-                        self.city_graph.add_edge((adjacent_x, adjacent_y), (x, y), weight=self.calculate_edge_weight(adjacent_x, adjacent_y, x, y))
+                        self.city_graph.add_edge((adjacent_x, adjacent_y), (x, y), weight=self.calculate_edge_weight(
+                            adjacent_x, adjacent_y, x, y))
                     else:
-                        self.city_graph.add_edge((x, y), (adjacent_x, adjacent_y), weight=self.calculate_edge_weight(x, y, adjacent_x, adjacent_y))
-                        
+                        self.city_graph.add_edge((x, y), (adjacent_x, adjacent_y), weight=self.calculate_edge_weight(
+                            x, y, adjacent_x, adjacent_y))
+
     def aligning_directions(self, road_agent, tl_x, tl_y, road_x, road_y):
         """
         Verifica si el semáforo y la carretera están alineados en la misma dirección.
@@ -212,12 +225,13 @@ class CityModel(Model):
         if any(isinstance(agent, Traffic_Light) and agent.state for agent in next_agents):
             return base_weight * 5
         return base_weight
-    
+
     def create_city_graph(self):
         """
         Crea el grafo de la ciudad con nodos y bordes.
         """
-        directions = {'Up': (0, 1), 'Down': (0, -1), 'Left': (-1, 0), 'Right': (1, 0)}
+        directions = {'Up': (0, 1), 'Down': (
+            0, -1), 'Left': (-1, 0), 'Right': (1, 0)}
         diagonal_directions = {
             'Right': [('Right', 'Up'), ('Right', 'Down')],
             'Up': [('Up', 'Right'), ('Up', 'Left')],
@@ -231,12 +245,14 @@ class CityModel(Model):
                 if any(isinstance(agent, Destination) for agent in agents):
                     self.destination_edges(x, y, directions)
                 elif any(isinstance(agent, Road) for agent in agents):
-                    road_agent = next((agent for agent in agents if isinstance(agent, Road)), None)
+                    road_agent = next(
+                        (agent for agent in agents if isinstance(agent, Road)), None)
                     if road_agent:
-                        self.road_edges(x, y, road_agent, directions, diagonal_directions)
+                        self.road_edges(x, y, road_agent,
+                                        directions, diagonal_directions)
                 elif any(isinstance(agent, Traffic_Light) for agent in agents):
                     self.add_traffic_light_edges(x, y, directions)
-    
+
     def destination_edges(self, x, y, directions):
         """
         Agrega bordes al grafo de la ciudad para las destinos en la posición dada.
@@ -254,7 +270,8 @@ class CityModel(Model):
                 self.city_graph.add_edge((nx, ny), (x, y), weight=weight)
 
     def road_edges(self, x, y, road_agent, directions, diagonal_directions):
-        road_directions = road_agent.direction if isinstance(road_agent.direction, list) else [road_agent.direction]
+        road_directions = road_agent.direction if isinstance(
+            road_agent.direction, list) else [road_agent.direction]
         for direction in road_directions:
             dx, dy = directions[direction]
             nx, ny = x + dx, y + dy
@@ -263,18 +280,20 @@ class CityModel(Model):
                 self.city_graph.add_edge((x, y), (nx, ny), weight=weight)
                 if direction in diagonal_directions:
                     for diag in diagonal_directions[direction]:
-                        ddx, ddy = (directions[diag[0]][0] + directions[diag[1]][0], directions[diag[0]][1] + directions[diag[1]][1])
+                        ddx, ddy = (directions[diag[0]][0] + directions[diag[1]]
+                                    [0], directions[diag[0]][1] + directions[diag[1]][1])
                         nnx, nny = x + ddx, y + ddy
                         if self.validPosition(nnx, nny) and not any(isinstance(agent, Traffic_Light) for agent in self.grid.get_cell_list_contents((nnx, nny))):
-                            self.city_graph.add_edge((x, y), (nnx, nny), weight=weight * 1.5)
-                            
+                            self.city_graph.add_edge(
+                                (x, y), (nnx, nny), weight=weight * 2)
+
     def remove_car(self, car):
         self.schedule.remove(car)
         self.grid.remove_agent(car)
-        
+
         # Decrementar el contador de carros
         self.car_counter -= 1
-    
+
     def weightEdges(self, x, y, nx, ny):
         """
         Calcula el peso de un borde entre dos posiciones en el mapa.
@@ -305,28 +324,31 @@ class CityModel(Model):
         print(self.step_count)
         if self.step_count % 3 == 0:
             self.add_cars()
-        if self.step_count % 100 == 0:
-            post(self.carsInDestination)
+        # if self.step_count % 100 == 0:
+        #     post(self.carsInDestination)
         # Stop the simulation every 1000 steps
         if self.step_count % 1000 == 0:
             self.running = False
 
+
 def post(arrived_cars):
     url = "http://52.1.3.19:8585/api/"
     endpoint = "attempts"
-    
+
     data = {
         "year": 2023,
         "classroom": 302,
         "name": "Equipo 9 - Sebastian y Samuel",
         "num_cars": arrived_cars
     }
-    
+
     headers = {
         "Content-Type": "application/json"
     }
-    
-    response = requests.post(url + endpoint, data = json.dumps(data), headers=headers)
-    
-    print("Request "+ "successfull" if response.status_code == 200 else "failed", "Status code:", response.status_code)
+
+    response = requests.post(
+        url + endpoint, data=json.dumps(data), headers=headers)
+
+    print("Request " + "successfull" if response.status_code ==
+          200 else "failed", "Status code:", response.status_code)
     print("Response", response.json())

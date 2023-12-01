@@ -100,8 +100,8 @@ public class ApplyTransforms : MonoBehaviour
 
             meshes[i].vertices = newVertices[i];
             meshes[i].RecalculateNormals();
+            meshes[i].RecalculateBounds();
         }
-
     }
 
     void InstanciarObjeto()
